@@ -283,3 +283,39 @@ school> db.students.find({age: {$not: {$gte: 27}}})
 ```
 
 Returns all documents that do not have `age` greater or equal to `27`
+
+## Connect with express
+
+```js
+const express = require("express")
+const {MongoClient} = require("mongodb")
+
+let db
+
+(async function() {
+    const client = new MongoClient("mongodb://localhost:27017")
+    await client.connect()
+    console.log("Connected Successfully")
+    db = client.db('school')
+})()
+
+const app = express()
+
+app.use(express.json())
+
+app.get('/', async (req, res) => {
+    const students = await db.collection("students").find().toArray()
+    res.json(students)
+})
+
+app.post('/', async (req, res) => {
+    const result = await db.collection("students").insertOne(req.body)
+    console.log(result.acknowledged)
+})
+
+app.put('/:id', async (req, res) => {
+    const id = req.params.id
+    const result = await db.collection("students").updateOne({_id: new ObjectId(id)}, {$set: {cgpa: req.body.cgpa}})
+    console.log(result)
+})
+```
