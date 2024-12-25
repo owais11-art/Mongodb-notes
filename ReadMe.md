@@ -319,3 +319,90 @@ app.put('/:id', async (req, res) => {
     console.log(result)
 })
 ```
+
+# Mongoose Notes
+
+## Connecting to DB
+
+```js
+const mongoose = require("mongoose")
+
+mongoose.connect("mongodb://127.0.0.1:27017/<Database Name>")
+
+```
+
+## Schema and model
+
+Schema is the definition of structure that documents of a collect adhere.
+
+```js
+const mongoose = require("mongoose")
+
+const familySchema = new mongoose.Schema({
+    father: String,
+    mother: String,
+    siblings: Number
+})
+
+const userSchema = new mongoose.Schema({
+    name: String,
+    age: Number,
+    fulltime: Boolean,
+    createdAt: Date,
+    subjects: [String],
+    address: {
+        state: String,
+        zip: Number
+    },
+    bestFriend: mongoose.SchemaTypes.ObjectId,
+    family: familySchema,
+    email: {
+        type: String,
+        required: true,
+        minLength: 10,
+        validate: {
+            validator: (value) => isValidEmail(value),
+            message: (props) => `${props.value} is not a valid email`
+        }
+    },
+    pincode: {
+        type: Number,
+        immutable: true
+    },
+    phone: {
+        type: Number,
+        minLength: 10,
+        maxLength: 10
+    }
+})
+```
+
+Model creates a collection that will contain documents following structure of a schema.
+
+```js
+...
+module.exports = mongoose.model("User", userSchema)
+```
+
+## Creating a document
+
+```js
+const user = new User({name: "...", age: 21})
+user.save()
+```
+
+```js
+const user = User.create({name: "...", age: 21})
+```
+
+## Update a document
+
+```js
+app.put("/:id", async(req, res) => {
+    const id = req.params.id
+    const user = await User.findById(id)
+    user.age = req.body.age
+    await user.save()
+    res.json(user)
+})
+```
